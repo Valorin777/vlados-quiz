@@ -1,0 +1,24 @@
+/* «Видео после финала» (FinaleCard.tsx): the preview player of the built-in clip. */
+.ad-finale-prev {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.ad-finale-video {
+  display: block;
+  height: 340px;
+  max-width: 100%;
+  border-radius: 18px;
+  background: #000;
+  box-shadow:
+    0 0 0 1px var(--glass-line),
+    0 18px 40px -22px rgba(0, 0, 0, 0.7);
+}
+.ad-finale-prev .ad-hint {
+  flex: 1 1 220px;
+  margin: 0;
+}
+.ad-finale-slot .ad-media-img {
+  max-height: 380px;
+}

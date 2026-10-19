@@ -1,0 +1,90 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "answers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "round",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "at",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "players",
+      "fieldPath": "avatar",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "players",
+      "fieldPath": "thumb",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "c",
+      "fieldPath": "d",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "admin",
+      "fieldPath": "settings",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "admin",
+      "fieldPath": "questions",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "admin",
+      "fieldPath": "trash",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "pub",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "round",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "reveal",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "board",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "final",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "games",
+      "fieldPath": "kicked",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "answers",
+      "fieldPath": "p",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "private",
+      "fieldPath": "rounds",
+      "indexes": []
+    }
+  ]
+}

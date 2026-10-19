@@ -1,0 +1,85 @@
+/* The video after the final on the phone (Finale.tsx): «Смотри на экран», the poster, a 🎬 badge. */
+
+.pl-fv {
+  align-items: center;
+  text-align: center;
+}
+.pl-fv-h {
+  margin: 8px 0 0;
+  font-size: 46px;
+  text-wrap: balance;
+}
+.pl-fv-sub {
+  margin: 8px 0 0;
+  font: 500 14px/1.4 var(--font-mono);
+  color: var(--fg);
+}
+.pl-fv-poster {
+  position: relative;
+  margin: 18px auto 0;
+  height: min(46dvh, 420px);
+  max-width: 100%;
+  border-radius: var(--r-l, 22px);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 0 0 6px color-mix(in srgb, var(--spec) 8%, transparent),
+    var(--shadow-2, 0 18px 40px -18px rgba(0, 0, 0, 0.6));
+}
+.pl-fv-poster .vx-fit {
+  position: absolute;
+  inset: 0;
+}
+@media (max-height: 700px) {
+  .pl-fv-poster {
+    height: 38dvh;
+  }
+  .pl-fv-h {
+    font-size: 38px;
+  }
+}
+/* the small 🎬 badge in the poster's corner */
+.pl-fv-badge {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 19px;
+  line-height: 1;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-line);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  animation: pl-fv-pulse 2.4s var(--ease-io, ease-in-out) infinite;
+}
+@keyframes pl-fv-pulse {
+  50% {
+    transform: scale(1.1);
+  }
+}
+.pl-fv-bar {
+  width: min(220px, 64%);
+  height: 6px;
+  margin: 18px auto 0;
+  border-radius: var(--r-pill);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+.pl-fv-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-fv-badge {
+    animation: none;
+  }
+}

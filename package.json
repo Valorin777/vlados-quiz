@@ -1,0 +1,60 @@
+{
+  "name": "vlados-quiz",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:app": "vite",
+    "build:app": "vite build",
+    "build": "npm run build:app",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:rules": "vitest run --config vitest.rules.config.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "rules:gen": "node tools/gen-rules.mjs",
+    "rules:deploy:dev": "node tools/deploy-rules.mjs dev",
+    "rules:deploy:prod": "node tools/deploy-rules.mjs prod",
+    "bot-admin:dev": "node tools/dev-bot-admin.mjs",
+    "seed:dev": "tsx tools/seed-dev.mjs",
+    "seed:prod": "tsx tools/seed-prod.mjs",
+    "og-image": "node tools/og-image.mjs",
+    "deploy": "node tools/deploy-pages.mjs",
+    "e2e:live": "tsx tools/e2e-live.ts",
+    "e2e:local": "node tools/e2e-local.mjs",
+    "swarm": "tsx tools/swarm.mjs",
+    "join-stress": "tsx tools/join-stress.ts"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "firebase": "^12.19.0",
+    "gsap": "^3.15.0",
+    "mediabunny": "^1.59.0",
+    "motion": "^13.4.1",
+    "nanoid": "^6.0.1",
+    "qrcode": "^1.5.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "wouter": "^3.11.0",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "esbuild": "^0.28.2",
+    "firebase-tools": "^15.30.2",
+    "playwright": "1.63.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6",
+    "vitest": "^5.0.1"
+  }
+}

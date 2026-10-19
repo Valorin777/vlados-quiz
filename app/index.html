@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru" data-mode="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- Kept in sync with the colour mode (pre-paint script below, then visual/appearance.ts). -->
+    <meta name="theme-color" content="#0e1015" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Кто лучше знает Владоса · 26.09 · 21:00</title>
+    <meta name="description" content="Большая игра в честь дня рождения Владоса. Суббота, 26 сентября, 21:00 — вопросы на большом экране, ответы с телефона." />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+
+    <!-- The design system's own fonts (self-hosted, relative to /vlados/): the two the first screen needs. -->
+    <link rel="preload" href="/fonts/unbounded-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geologica-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- Link preview for the group chat (Telegram, WhatsApp, VK). og-image.png is rendered from #/og
+         by tools/og-image.mjs; absolute URLs because crawlers do not resolve relative ones. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="Кто лучше знает Владоса" />
+    <meta property="og:title" content="Кто лучше знает Владоса · 26.09 · 21:00" />
+    <meta property="og:description" content="Большая игра в честь дня рождения. Суббота, 21:00 — залетай с телефона!" />
+    <meta property="og:url" content="https://valorin777.github.io/vlados/" />
+    <meta property="og:image" content="https://valorin777.github.io/vlados/og-image.png" />
+    <meta property="og:image:secure_url" content="https://valorin777.github.io/vlados/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Кто лучше знает Владоса · 26.09 · 21:00 — хромовые буквы и капли ртути" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Кто лучше знает Владоса · 26.09 · 21:00" />
+    <meta name="twitter:description" content="Большая игра в честь дня рождения. Суббота, 21:00 — залетай с телефона!" />
+    <meta name="twitter:image" content="https://valorin777.github.io/vlados/og-image.png" />
+
+    <script>
+      // Resolve light/dark before first paint (no flash). Same key and values as visual/appearance.ts;
+      // the TV and the preview card are dark unless `?mode=` says otherwise (they re-apply once mounted).
+      (function () {
+        var pref = 'system';
+        try {
+          pref = localStorage.getItem('vlados.appearance') || 'system';
+        } catch (e) {}
+        var h = location.hash;
+        if (h.indexOf('#/tv') === 0 || h.indexOf('#/og') === 0) {
+          var m = /[?&]mode=(light|dark)/.exec(location.search);
+          pref = m ? m[1] : 'dark';
+        }
+        var dark = pref === 'dark' || (pref !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        var mode = dark ? 'dark' : 'light';
+        var root = document.documentElement;
+        root.setAttribute('data-mode', mode);
+        root.style.colorScheme = mode;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#0e1015' : '#eceef2');
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Для игры нужен включённый JavaScript.</noscript>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>

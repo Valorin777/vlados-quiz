@@ -1,0 +1,39 @@
+{
+  "projects": {
+    "prod": {
+      "apiKey": "AIzaSyAYmfpKEfUuKnMBPzGn3ITdnQcfzzYDqW0",
+      "authDomain": "vlados-2609.firebaseapp.com",
+      "projectId": "vlados-2609",
+      "appId": "1:276033125646:web:ea16edfb2d955be71eeb5f",
+      "messagingSenderId": "276033125646"
+    },
+    "dev": {
+      "apiKey": "AIzaSyA3nSNfwDs-0niP83_M_qP4dm6oFdxBYKA",
+      "authDomain": "vlados-2609-dev.firebaseapp.com",
+      "projectId": "vlados-2609-dev",
+      "appId": "1:495100952803:web:1f47b23b7cfc67085685d6",
+      "messagingSenderId": "495100952803"
+    }
+  },
+  "limits": {
+    "nameMax": 20,
+    "avatarMaxBytes": 40960,
+    "thumbMaxBytes": 6144,
+    "chunkMaxBytes": 921600,
+    "maxChunks": 64,
+    "mediaMaxBytes": 52428800,
+    "reactionBucketMs": 3000,
+    "reactionMax": 7,
+    "answerEarlyMs": 500,
+    "answerLateMs": 2000,
+    "idMax": 64,
+    "textMax": 500,
+    "bannerMax": 280,
+    "adminEmailsMax": 20,
+    "questionsMax": 300,
+    "optionsMax": 8,
+    "playerWriteGapMs": 3000,
+    "playersHardMax": 500,
+    "numberAbsMax": 1000000000000000
+  }
+}

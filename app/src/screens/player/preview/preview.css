@@ -1,0 +1,72 @@
+/* Lab «Экраны»: fixture list + one phone frame. */
+.plp {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 88px 24px 40px;
+  min-height: 100dvh;
+}
+.plp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 260px;
+  flex: none;
+}
+.plp-list button {
+  appearance: none;
+  text-align: left;
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: transparent;
+  color: var(--fg);
+  font: 500 14px/1.25 var(--font-body);
+  cursor: pointer;
+}
+.plp-list button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--fg-strong);
+}
+.plp-dev {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.plp-box {
+  position: relative;
+  border-radius: 46px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 10px #0b0c10,
+    0 0 0 11px #2a2e36,
+    var(--shadow-2);
+}
+.plp-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 390px;
+  height: 844px;
+  transform-origin: 0 0;
+  overflow: auto;
+}
+.plp-dev figcaption {
+  font: 500 13px/1 var(--font-mono);
+  color: var(--fg-muted);
+}
+.plp-dev a {
+  color: var(--accent);
+}
+@media (max-width: 760px) {
+  .plp {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+  .plp-list {
+    width: 100%;
+  }
+}

@@ -1,0 +1,282 @@
+/* Liquid chrome: base layer — ground, type roles, chrome text, CSS-chrome fallback, stage.
+   Scope: everything under `.vx` (the app shell adds it to its root). */
+
+html:has(.vx) {
+  background: var(--bg);
+}
+html:has(.vx) body {
+  background: var(--ground-grad) fixed, var(--bg);
+  color: var(--fg);
+}
+
+.vx {
+  font: 400 var(--t-body) / var(--lh-body) var(--font-body);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+/* a subtree with its own data-mode re-resolves inherited colours from its scoped tokens */
+.vx [data-mode] {
+  color: var(--fg);
+}
+:where(.vx) *,
+:where(.vx) *::before,
+:where(.vx) *::after {
+  box-sizing: border-box;
+}
+.vx :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+/* Element resets use :where(.vx) so they beat bare element selectors from app sheets (e.g. the
+   placeholder's `button { min-height: 44px }`) but never a component class. */
+:where(.vx) button,
+:where(.vx) input,
+:where(.vx) select,
+:where(.vx) textarea {
+  font: inherit;
+  color: inherit;
+  min-height: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+:where(.vx) [aria-pressed='true']:not(:focus-visible) {
+  outline: none;
+}
+:where(.vx) img {
+  display: block;
+  max-width: 100%;
+}
+.vx-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- mode switch: cross-fade (no View Transitions) / circular wipe (with) ---------- */
+.vx-mode-anim,
+.vx-mode-anim *,
+.vx-mode-anim *::before,
+.vx-mode-anim *::after {
+  transition:
+    background-color 0.6s var(--ease-io),
+    color 0.6s var(--ease-io),
+    border-color 0.6s var(--ease-io),
+    fill 0.6s var(--ease-io),
+    stroke 0.6s var(--ease-io),
+    box-shadow 0.6s var(--ease-io) !important;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* ---------- liquid stage ---------- */
+.lq-stage {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+.lq-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+.lq-contained {
+  overflow: hidden;
+  background: var(--ground-grad), var(--bg);
+}
+.lq-contained > .lq-canvas {
+  position: absolute;
+}
+.lq-stage[data-tier='0'] > .lq-canvas {
+  visibility: hidden;
+}
+
+/* ---------- type roles ---------- */
+.vx-hero {
+  margin: 0;
+  font: 900 var(--t-hero) / var(--lh-tight) var(--font-display);
+  letter-spacing: var(--track-hero);
+}
+.vx-h1 {
+  margin: 0;
+  font: 800 var(--t-h1) / 1.02 var(--font-display);
+  letter-spacing: -0.02em;
+}
+.vx-h2 {
+  margin: 0;
+  font: 800 var(--t-h2) / 1.08 var(--font-display);
+  letter-spacing: -0.01em;
+}
+.vx-h3 {
+  margin: 0;
+  font: 700 var(--t-h3) / 1.15 var(--font-display);
+}
+.vx-lead {
+  margin: 0;
+  font: 650 var(--t-lead) / 1.3 var(--font-body);
+  color: var(--fg-strong);
+  text-wrap: balance;
+}
+.vx-body {
+  margin: 0;
+  font: 400 var(--t-body) / var(--lh-body) var(--font-body);
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+.vx-small {
+  margin: 0;
+  font: 500 var(--t-small) / 1.35 var(--font-body);
+  color: var(--fg-muted);
+}
+.vx-kick {
+  margin: 0;
+  font: 600 var(--t-kick) / 1.2 var(--font-mono);
+  letter-spacing: var(--track-kick);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.vx-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.vx-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- chrome letters (gradient + moving iridescent reflection) ---------- */
+.vx-chr {
+  color: var(--chrome-text-base);
+  background-image: var(--sheen-text), var(--chrome-text);
+  background-size:
+    260% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  background-position:
+    115% 0,
+    0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: vx-sweep var(--sweep-period) var(--ease-sweep) infinite;
+}
+.vx-chr.vx-still {
+  animation: none;
+}
+@keyframes vx-sweep {
+  0% {
+    background-position:
+      115% 0,
+      0 0;
+  }
+  55%,
+  100% {
+    background-position:
+      -15% 0,
+      0 0;
+  }
+}
+.vx-split .w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.06em 0.04em 0.12em;
+  margin: -0.06em -0.04em -0.12em;
+}
+.vx-split .wd {
+  display: inline-block;
+  white-space: nowrap;
+}
+.vx-split .ch,
+.vx-split .wi {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation-delay: calc(var(--i, 0) * 0.07s);
+}
+
+/* engraved text on chrome */
+.vx-eng {
+  color: var(--on-chrome);
+  text-shadow: var(--on-chrome-hi);
+}
+
+/* ---------- CSS chrome (tier 0, and until the engine is live) ----------
+   `.lq` elements paint chrome on ::before; when the engine draws their blob it sets
+   data-lq="live" and the CSS layer fades out, so the swap is seamless. */
+.lq {
+  position: relative;
+  isolation: isolate;
+}
+.lq::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: var(--sheen), var(--chrome);
+  background-size:
+    300% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  background-position:
+    120% 0,
+    0 0;
+  box-shadow: var(--chrome-bevel), var(--chrome-shadow);
+  transition: opacity 0.45s var(--ease-out);
+  animation: vx-sweep 7.5s var(--ease-sweep) infinite;
+  pointer-events: none;
+}
+.lq-circle::before {
+  background-image: var(--chrome-sphere);
+  background-size: 100% 100%;
+  animation: none;
+}
+.lq-band::before {
+  background-image: var(--sheen), var(--chrome-band);
+}
+.lq[data-tone='film']::before {
+  background-image: var(--sheen), var(--film-fill);
+}
+.lq[data-tone='tarnish']::before {
+  /* one layer: without its own size/position it would take the sheen's (300% wide, parked at
+     120%) and cover only the left 60% of a pill — wrong options looked half-painted */
+  background-image: var(--tarnish);
+  background-size: 100% 100%;
+  background-position: 0 0;
+  animation: none;
+}
+.lq[data-tone='dim']::before {
+  filter: saturate(0.4) brightness(0.82);
+}
+.lq[data-lq='live']::before {
+  opacity: 0;
+  /* hidden under its blob: a running background-position sweep still restyled and repainted
+     every chrome element every frame (≈ 30 % of a question screen's main-thread time) */
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vx-chr,
+  .lq::before {
+    animation: none;
+  }
+}

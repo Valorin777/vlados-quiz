@@ -1,0 +1,98 @@
+/* #/og — the 1200 × 630 link-preview card (OgCard.tsx). Design units = CSS px of the card. */
+
+.og-viewport {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  overflow: hidden;
+}
+.og-stage {
+  position: relative;
+}
+.og-surface {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1200px;
+  height: 630px;
+  transform-origin: 0 0;
+}
+.og-drop {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.og-copy {
+  position: absolute;
+  left: 84px;
+  top: 128px;
+  width: 800px;
+}
+.og-kick {
+  margin: 0 0 6px 6px;
+  font: 700 46px/1.05 var(--font-display);
+  letter-spacing: -0.015em;
+  color: var(--fg-strong, var(--fg));
+}
+.og-hero {
+  display: block;
+  margin: 0;
+  font: 900 122px/1 var(--font-display);
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  /* park the reflection across the middle letters instead of off-glyph */
+  background-position:
+    46% 0,
+    0 0;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.32));
+}
+:root[data-mode='light'] .og-hero {
+  filter: drop-shadow(0 14px 22px rgba(20, 24, 32, 0.18));
+}
+
+.og-row {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin: 38px 0 0 4px;
+}
+.og-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  height: 92px;
+  padding: 0 44px;
+  border-radius: 46px;
+  font: 800 46px/1 var(--font-display);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.og-pill i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--on-chrome);
+  opacity: 0.55;
+}
+.og-note {
+  margin: 0;
+  font: 500 25px/1.28 var(--font-body);
+  color: var(--fg-2);
+}
+
+.og-foot {
+  position: absolute;
+  left: 90px;
+  bottom: 46px;
+  margin: 0;
+  font: 600 17px/1.2 var(--font-mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.og-foot b {
+  font-weight: 700;
+  color: var(--accent);
+}

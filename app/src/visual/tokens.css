@@ -1,0 +1,268 @@
+/* Liquid chrome: design tokens.
+ *
+ * Two grounds, designed separately:
+ *   dark  — graphite/ink night studio (the approved prototype, design/proto-chrome.html)
+ *   light — polished silver on a cool pearl / milk-glass studio sweep: darker horizon band so
+ *           chrome still reads as metal, engraved graphite text, stronger thin-film iridescence.
+ *
+ * Mode lives on <html data-mode="dark|light"> (resolved before first paint by app/index.html,
+ * kept in sync by visual/appearance.ts). Any subtree may force a mode with its own data-mode
+ * attribute (the Lab uses this to show both modes side by side). Without an attribute the
+ * system preference applies ("как в системе").
+ *
+ * Contrast (WCAG 2.x, text on --bg / --bg-raised):
+ *   dark  fg-strong 16.7 · fg 11.6 · fg-2 7.0 · fg-muted 5.7 · accent 11.8 · hot 10.1
+ *   light fg-strong 15.7 · fg 13.3 · fg-2 7.0 · fg-muted 5.3 · accent 4.9 · hot 5.1
+ */
+
+:root {
+  /* ---- type ---- */
+  --font-display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
+  --font-body: 'Geologica', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+
+  /* fluid scale: phone 360–430 px wide → TV/desktop; container-free so it also works in the Lab */
+  --t-hero: clamp(44px, 13vw, 116px);
+  --t-h1: clamp(30px, 7.8vw, 56px);
+  --t-h2: clamp(24px, 6.2vw, 40px);
+  --t-h3: clamp(19px, 4.8vw, 26px);
+  --t-lead: 17px;
+  --t-body: 15px;
+  --t-small: 13px;
+  --t-kick: 11px;
+  --lh-tight: 1.02;
+  --lh-snug: 1.15;
+  --lh-body: 1.45;
+  --track-kick: 0.16em;
+  --track-hero: -0.015em;
+
+  /* ---- space (4-pt) ---- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 56px;
+  --s-10: 72px;
+  --gutter: max(20px, env(safe-area-inset-left, 0px));
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
+  /* ---- radii ---- */
+  --r-xs: 8px;
+  --r-s: 12px;
+  --r-m: 18px;
+  --r-l: 24px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* ---- motion ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.75, 0.2);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-back: cubic-bezier(0.3, 1.45, 0.5, 1);
+  --ease-sweep: cubic-bezier(0.62, 0, 0.28, 1);
+  --d-1: 0.14s;
+  --d-2: 0.28s;
+  --d-3: 0.55s;
+  --d-4: 0.9s;
+  --sweep-period: 6.5s;
+
+  /* ---- layers ---- */
+  --z-canvas: 0;
+  --z-content: 1;
+  --z-float: 20;
+  --z-reactions: 30;
+  --z-sheet: 40;
+  --z-toast: 60;
+
+  /* ---- mode-independent film hues (decorative only, never text on light) ---- */
+  --film-c: #6fe3d8;
+  --film-m: #de6ccb;
+  --film-g: #efb860;
+  --sheen: linear-gradient(
+    104deg,
+    transparent 0 41%,
+    rgba(255, 255, 255, 0.95) 46.5%,
+    rgba(111, 227, 216, 0.9) 48.6%,
+    rgba(222, 108, 203, 0.8) 50.4%,
+    rgba(239, 184, 96, 0.7) 52%,
+    transparent 57% 100%
+  );
+  --film-fill: linear-gradient(100deg, #8fede4 0%, #f6f8fa 28%, #e58ad6 55%, #f2c77a 80%, #f6f8fa 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-1: 0.01s;
+    --d-2: 0.12s;
+    --d-3: 0.2s;
+    --d-4: 0.25s;
+  }
+}
+
+/* =========================================================================================
+   DARK — graphite / ink
+   ========================================================================================= */
+:root,
+:root[data-mode='dark'],
+[data-mode='dark'] {
+  color-scheme: dark;
+  /* raw palette (prototype names) */
+  --ink: #0e1015;
+  --ground: #13161c;
+  --graphite: #1b1f26;
+  --steel: #8a919c;
+  --mercury: #c9cfd8;
+  --spec: #f4f6f9;
+  --engrave: #13151a;
+  --bronze: #c99a62;
+
+  /* semantic */
+  --bg: #0e1015;
+  --bg-raised: #1b1f26;
+  --bg-sunken: #0a0c10;
+  --ground-grad: radial-gradient(120% 90% at 50% 38%, #161920 0%, #0e1015 70%);
+  --glass: rgba(20, 23, 29, 0.72);
+  --glass-strong: rgba(16, 18, 23, 0.9);
+  --glass-line: rgba(201, 207, 216, 0.14);
+  --line: #262a33;
+  --line-strong: #3b414b;
+  --scrim: rgba(5, 6, 9, 0.62);
+  /* the blurred copy of a photo behind it (FitImage): darkened on graphite */
+  --fit-bg-filter: blur(22px) saturate(1.25) brightness(0.52);
+  --fit-veil: rgba(8, 9, 12, 0.16);
+  --fit-ground: #0a0c10;
+
+  --fg-strong: #f4f6f9;
+  --fg: #c9cfd8;
+  --fg-2: #9aa1ac;
+  --fg-muted: #8a919c;
+  --fg-faint: #555c67;
+  --accent: #6fe3d8;
+  --hot: #efb860;
+  --good: #6fe3d8;
+  --bad: #c99a62;
+  --focus: #6fe3d8;
+
+  --on-chrome: #13151a;
+  --on-chrome-hi: 0 1px 0 rgba(255, 255, 255, 0.5), 0 -1px 0 rgba(0, 0, 0, 0.16);
+  --on-tarnish: #e6e9ee;
+  --on-tarnish-hi: 0 1px 0 rgba(0, 0, 0, 0.6);
+
+  /* chrome fills (CSS fallback + small static pieces) */
+  /* --chrome keeps the middle light (engraved text sits there); the horizon reflection hugs the
+     lower rim like it does on the WebGL pills. --chrome-band is the dramatic decorative version. */
+  --chrome: linear-gradient(180deg, #fbfcfd 0%, #8d95a0 7%, #e6e9ee 22%, #cfd4db 50%, #b4bbc5 70%, #535a66 86%, #9aa1ab 93%, #eef1f4 100%);
+  --chrome-band: linear-gradient(180deg, #f4f6f9 0%, #c3c9d1 42%, #5e6672 51%, #cdd2d9 68%, #eef1f4 100%);
+  --chrome-sphere: radial-gradient(circle at 38% 30%, #fff, #c6ccd4 30%, #4a515c 62%, #d5dae0 85%);
+  --chrome-rim: linear-gradient(140deg, #f4f6f9 0%, #8b929d 18%, #1c1f25 34%, #cdd3da 52%, #555c67 70%, #f0f2f5 86%, #7c838e 100%);
+  --chrome-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.8);
+  --tarnish: linear-gradient(180deg, #7b6a58 0%, #4a3a52 40%, #1f1a28 52%, #3d3047 70%, #6d5a44 100%);
+  /* chrome letters */
+  --chrome-text: linear-gradient(180deg, #fdfeff 0%, #d9dee5 24%, #a1a9b4 43%, #3a3f49 50%, #626a76 57%, #bcc3cc 73%, #eef1f5 88%, #fff 100%);
+  --chrome-text-base: #d6dbe2;
+  /* the reflection travelling over chrome letters: a white-hot core reads as a highlight on ink */
+  --sheen-text: var(--sheen);
+  /* CSS chrome bodies: a rounded rim (the WebGL bevel) — lit top edge, dark outline, soft inner
+     edge — so the fallback reads as a solid metal pill, not a flat gradient sticker */
+  --chrome-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(8, 10, 14, 0.38), inset 0 0 7px 1px rgba(8, 10, 14, 0.28);
+
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.9);
+  --shadow-2: 0 30px 80px -30px rgba(0, 0, 0, 0.95);
+  --grain-opacity: 0.05;
+}
+
+/* =========================================================================================
+   LIGHT — pearl studio sweep. Chrome needs something dark to reflect, so fills carry a deep
+   horizon band and a graphite rim; text is engraved graphite, film is stronger.
+   ========================================================================================= */
+:root[data-mode='light'],
+[data-mode='light'] {
+  color-scheme: light;
+  --ink: #1e232b;
+  --ground: #eceef2;
+  --graphite: #dde1e7;
+  --steel: #565e6a;
+  --mercury: #2b313a;
+  --spec: #0e1116;
+  --engrave: #13151a;
+  --bronze: #8b4a1c;
+
+  --bg: #eceef2;
+  --bg-raised: #f6f7f9;
+  --bg-sunken: #dde1e7;
+  --ground-grad: radial-gradient(120% 95% at 50% 30%, #f8f9fb 0%, #e9ecf0 55%, #d9dde4 100%);
+  --glass: rgba(246, 247, 250, 0.72);
+  --glass-strong: rgba(250, 251, 252, 0.9);
+  --glass-line: rgba(30, 35, 43, 0.12);
+  --line: rgba(30, 35, 43, 0.12);
+  --line-strong: rgba(30, 35, 43, 0.24);
+  --scrim: rgba(206, 211, 219, 0.55);
+  /* the blurred copy of a photo behind it (FitImage): washed light on silver */
+  --fit-bg-filter: blur(22px) saturate(1.1) brightness(1.18) contrast(0.82);
+  --fit-veil: rgba(246, 247, 250, 0.3);
+  --fit-ground: #dde1e7;
+
+  --fg-strong: #0e1116;
+  --fg: #1e232b;
+  --fg-2: #454c57;
+  --fg-muted: #565e6a;
+  --fg-faint: #9aa1ab;
+  --accent: #0e6f69;
+  --hot: #8a5306;
+  --good: #0e6f69;
+  --bad: #8b4a1c;
+  --focus: #0e6f69;
+
+  --on-chrome: #13151a;
+  --on-chrome-hi: 0 1px 0 rgba(255, 255, 255, 0.7), 0 -1px 0 rgba(0, 0, 0, 0.12);
+  --on-tarnish: #eef0f3;
+  --on-tarnish-hi: 0 1px 0 rgba(0, 0, 0, 0.55);
+
+  --chrome: linear-gradient(180deg, #ffffff 0%, #6c7481 8%, #f1f3f6 22%, #dce0e6 50%, #c3c9d1 70%, #30363f 87%, #8e959f 94%, #f4f6f8 100%);
+  --chrome-band: linear-gradient(180deg, #ffffff 0%, #d7dce3 36%, #7d8591 47%, #2f353e 52%, #8e959f 60%, #dde1e6 80%, #fafbfc 100%);
+  --chrome-sphere: radial-gradient(circle at 38% 28%, #fff 0 6%, #d9dee4 24%, #636b77 50%, #262b33 60%, #b5bcc5 80%, #f3f5f7 94%);
+  --chrome-rim: linear-gradient(140deg, #ffffff 0%, #9aa1ab 16%, #262a31 32%, #dfe3e8 50%, #4b525c 68%, #f6f7f9 86%, #6c737e 100%);
+  --chrome-shadow: 0 0 0 1px rgba(20, 24, 32, 0.16), 0 12px 22px -12px rgba(20, 24, 32, 0.45);
+  --tarnish: linear-gradient(180deg, #8a765f 0%, #574561 40%, #2a2233 52%, #4a3b55 70%, #7f6a4f 100%);
+  --chrome-text: linear-gradient(180deg, #4b525d 0%, #1b1f26 30%, #767e8a 46%, #0c0e12 52%, #3e4550 64%, #8d95a1 84%, #2a2f38 100%);
+  --chrome-text-base: #2a2f38;
+  /* on a pale ground a white core would erase the letters: the film band goes deep instead */
+  --sheen-text: linear-gradient(
+    104deg,
+    transparent 0 41%,
+    rgba(14, 111, 105, 0.95) 46.5%,
+    rgba(25, 128, 150, 0.9) 48.6%,
+    rgba(142, 42, 124, 0.88) 50.4%,
+    rgba(138, 83, 6, 0.85) 52%,
+    transparent 57% 100%
+  );
+  --chrome-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(20, 24, 32, 0.42), inset 0 0 8px 1px rgba(20, 24, 32, 0.24);
+
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 10px 26px -14px rgba(30, 35, 43, 0.45);
+  --shadow-2: 0 30px 70px -30px rgba(30, 35, 43, 0.5);
+  --grain-opacity: 0.035;
+}
+
+/* "как в системе" before any script ran: dark is the :root default above; a light system without
+   a resolved data-mode gets the essentials (index.html resolves the full mode before first paint). */
+@media (prefers-color-scheme: light) {
+  :root:not([data-mode]) {
+    color-scheme: light;
+    --bg: #eceef2;
+    --ground-grad: radial-gradient(120% 95% at 50% 30%, #f8f9fb 0%, #e9ecf0 55%, #d9dde4 100%);
+    --fg: #1e232b;
+    --fg-strong: #0e1116;
+    --fg-2: #454c57;
+    --fg-muted: #565e6a;
+    --chrome-text: linear-gradient(180deg, #4b525d 0%, #1b1f26 30%, #767e8a 46%, #0c0e12 52%, #3e4550 64%, #8d95a1 84%, #2a2f38 100%);
+    --sheen-text: linear-gradient(104deg, transparent 0 41%, rgba(14, 111, 105, 0.95) 46.5%, rgba(142, 42, 124, 0.88) 50.4%, rgba(138, 83, 6, 0.85) 52%, transparent 57% 100%);
+  }
+}

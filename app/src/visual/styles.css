@@ -1,0 +1,6 @@
+/* Liquid chrome design system — one stylesheet: fonts, tokens, base, primitives.
+   Imported by visual/index.ts, so any screen that uses the system gets it. */
+@import './fonts.css';
+@import './tokens.css';
+@import './base.css';
+@import './ui.css';

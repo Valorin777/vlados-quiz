@@ -1,0 +1,234 @@
+/* The «Сюрприз» on the TV (SurpriseLayer.tsx + breakdown.ts): the breakdown's overlays, the black,
+   the video over a blurred copy of itself, the melt into the reveal. Only transform / opacity move
+   on the big layers; the filters of the breakdown are stepped in JS. */
+
+/* the whole TV goes black around the collapsing picture (the letterbox too) */
+html.tv-sur-dark .tv-viewport,
+html.tv-sur-dark .tv-stage.lq-contained {
+  background: #000;
+}
+
+.tsu {
+  position: absolute;
+  inset: 0;
+  z-index: 52;
+  pointer-events: none;
+}
+/* opaque: the liquid engine sees it covered and stops drawing while the video plays */
+.tsu.is-black,
+.tsu.is-play {
+  background: #000;
+  pointer-events: auto;
+  cursor: none;
+}
+
+/* ---------------------------------------------------------------- the breakdown */
+
+.tsu-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.tsu-scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.32) 0 1px, transparent 1px 3px);
+  opacity: 0;
+  animation: tsu-scan 2.6s linear forwards;
+}
+@keyframes tsu-scan {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.45;
+  }
+  60% {
+    opacity: 0.75;
+  }
+  84% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* the DOM's torn slices (static copies of the scene, each seen through one band) */
+.tsu-tears {
+  position: absolute;
+  inset: 0;
+  z-index: 34;
+  pointer-events: none;
+}
+.tsu-tear {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1280px;
+  height: 0;
+  overflow: hidden;
+  will-change: transform;
+}
+.tsu-tear-in {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1280px;
+  height: 720px;
+  will-change: transform;
+}
+.tsu-tear-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------- the video */
+
+.tsu-v {
+  position: absolute;
+  inset: 0;
+}
+.tsu-back {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  transition: opacity 1s var(--ease-io, ease) 0.5s;
+}
+/* a few pixels of the video's own colours, scaled up: a soft, moving light around the frame */
+.tsu-amb {
+  position: absolute;
+  inset: -6%;
+  width: 112%;
+  height: 112%;
+  opacity: 0;
+  transition: opacity 2.4s var(--ease-out, ease-out) 0.5s;
+}
+.tsu-v.is-playing .tsu-amb {
+  opacity: 0.9;
+}
+.tsu-vig {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(58% 80% at 50% 50%, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.86) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.4));
+}
+/* the frame: the video's proportions, as tall as the stage allows, centred */
+.tsu-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: min(100%, calc(1280px / var(--media-ar, 0.5625)));
+  aspect-ratio: var(--media-ar, 0.5625);
+  overflow: hidden;
+  background: #000;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.035);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 0 120px 20px rgba(0, 0, 0, 0.55);
+  transition:
+    opacity 1.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.tsu-v.is-playing .tsu-frame {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.tsu-host {
+  position: absolute;
+  inset: 0;
+}
+.tsu-host video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* the mercury the frame melts into (a chrome ball) */
+.tsu-merc {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(circle closest-side at 40% 40%, rgba(255, 255, 255, 0.95) 0, rgba(255, 255, 255, 0) 16%),
+    radial-gradient(circle closest-side at 50% 50%, #f4f7fb 0, #c9d1dd 22%, #7f8898 48%, #2c313c 74%, #0b0d12 92%, #0b0d12 100%);
+}
+
+/* ---------------------------------------------------------------- the melt into the reveal */
+
+.tsu.is-melt {
+  background: transparent;
+}
+.tsu-v.is-leaving .tsu-back {
+  opacity: 0;
+}
+.tsu-v.is-leaving .tsu-frame {
+  opacity: 1;
+  animation: tsu-melt 1.45s cubic-bezier(0.55, 0, 0.3, 1) forwards;
+}
+.tsu-v.is-leaving .tsu-merc {
+  animation: tsu-merc 1.45s ease forwards;
+}
+@keyframes tsu-melt {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    clip-path: inset(0% 0% 0% 0% round 0px);
+    filter: none;
+  }
+  28% {
+    transform: translate(-50%, -50%) scale(0.94);
+    clip-path: inset(4% 3% 4% 3% round 48px);
+    filter: grayscale(1) contrast(1.6) brightness(1.2);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(0.72);
+    clip-path: var(--melt-clip, inset(21.9% 0% 21.9% 0% round 50%));
+    filter: grayscale(1) contrast(1.8) brightness(1.1);
+  }
+  74% {
+    transform: translate(-50%, -50%) scale(0.62);
+    clip-path: var(--melt-clip, inset(21.9% 0% 21.9% 0% round 50%));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -12%) scale(0.05);
+    clip-path: var(--melt-clip, inset(21.9% 0% 21.9% 0% round 50%));
+    opacity: 0;
+  }
+}
+@keyframes tsu-merc {
+  0%,
+  22% {
+    opacity: 0;
+  }
+  58%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tsu-scan {
+    animation-duration: 1.2s;
+  }
+  .tsu-frame {
+    transform: translate(-50%, -50%);
+    transition: opacity 1.2s ease;
+  }
+  .tsu-v.is-leaving .tsu-frame {
+    animation: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .tsu-v.is-leaving .tsu-back {
+    transition-delay: 0s;
+    transition-duration: 0.6s;
+  }
+}

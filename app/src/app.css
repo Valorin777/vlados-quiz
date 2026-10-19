@@ -1,0 +1,68 @@
+/* App shell: the page itself, before and around whichever screen mounts. Colours and fonts come
+   from the liquid chrome tokens (visual/styles.css), so the first paint already matches the mode
+   the pre-paint script in index.html resolved. Screens own everything inside #root. */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+html {
+  background: var(--bg);
+  color-scheme: light dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--ground-grad) fixed, var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  overscroll-behavior-y: none;
+}
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Suspense fallback while a code-split screen (TV, admin, lab) loads: one breathing chrome drop. */
+.app-boot {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  font: 500 13px/1.2 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: var(--fg-2);
+}
+.app-boot i {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, #fff 0 8%, transparent 26%),
+    radial-gradient(circle at 60% 72%, rgba(255, 255, 255, 0.35), transparent 50%),
+    linear-gradient(160deg, #eef1f5 0%, #9aa3af 38%, #2b3039 54%, #7c8592 70%, #e4e8ee 100%);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.28),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.35);
+  animation: app-boot 1.6s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+}
+@keyframes app-boot {
+  0%,
+  100% {
+    transform: scale(0.86, 0.92);
+  }
+  50% {
+    transform: scale(1.04, 0.98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-boot i {
+    animation: none;
+  }
+}

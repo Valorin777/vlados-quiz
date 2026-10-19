@@ -1,0 +1,152 @@
+/* The video after the final (scenes/Finale.tsx): the mosaic gathers into a droplet that splashes
+   open into a big frame of the video's own proportions, over a blurred, glowing copy of its poster
+   that fills the whole stage (no black bars anywhere). */
+
+.tfv {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  transition: opacity 1.1s var(--ease-io, ease);
+}
+.tfv.is-done {
+  opacity: 0;
+}
+
+/* the ambient backdrop: the poster, huge and soft, darkened towards the edges. The poster comes
+   pre-blurred, saturated and darkened (finale.ts softPoster): no filter on a 4K layer that would be
+   redone under every frame of the video */
+.tfv-back {
+  position: absolute;
+  inset: -60px;
+  background:
+    radial-gradient(70% 80% at 50% 50%, transparent 0 34%, rgba(4, 5, 8, 0.8) 100%),
+    var(--tfv-poster, none) center / cover no-repeat,
+    radial-gradient(60% 70% at 50% 45%, #10131a, #040507);
+  opacity: 0;
+  animation: tfv-back 1.8s var(--ease-out, ease-out) 0.5s forwards;
+}
+.tfv.is-joined .tfv-back {
+  animation-delay: 0s;
+  animation-duration: 0.6s;
+}
+@keyframes tfv-back {
+  to {
+    opacity: 1;
+  }
+}
+
+/* a slow iridescent halo behind the frame */
+.tfv-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 760px;
+  height: 760px;
+  margin: -380px 0 0 -380px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--film-c), var(--film-m), var(--film-g), var(--film-c));
+  /* soft by its own mask: a blur(90px) + screen blend on a spinning layer was a 270-device-px blur
+     over the backdrop on every frame the video played */
+  -webkit-mask-image: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, 0.55) 40%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, 0.55) 40%, transparent 100%);
+  opacity: 0;
+  transition: opacity 1.6s var(--ease-io, ease);
+  animation: tfv-spin 14s linear infinite;
+}
+.tfv.is-landed .tfv-glow {
+  opacity: 0.3;
+}
+.tfv.is-done .tfv-glow {
+  opacity: 0;
+}
+@keyframes tfv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tfv-stage {
+  position: absolute;
+  inset: 26px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* the frame: the video's proportions, as big as the stage allows */
+.tfv-e {
+  flex: none;
+  height: min(100%, calc(1200px / var(--media-ar, 0.547)));
+  aspect-ratio: var(--media-ar, 0.547);
+  transition: transform 1s var(--ease-io, ease);
+}
+.tfv-e .vx-emerge-frame,
+.tfv-plain {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--spec) 38%, transparent),
+    0 0 0 9px color-mix(in srgb, var(--spec) 7%, transparent),
+    0 40px 90px -30px rgba(0, 0, 0, 0.9);
+}
+.tfv-plain {
+  position: relative;
+  border-radius: 30px;
+  overflow: hidden;
+  animation: tfv-join 0.7s var(--ease-out, ease-out) both;
+}
+@keyframes tfv-join {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+.tfv.is-done .tfv-e {
+  transform: scale(0.86) translateY(20px);
+}
+
+.tfv-in {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #06070a;
+}
+.tfv-poster {
+  position: absolute;
+  inset: 0;
+}
+/* under a playing video the poster (and its blurred fill) is never seen: out of the paint */
+.tfv.is-playing .tfv-poster {
+  visibility: hidden;
+  transition: visibility 0s linear 0.6s;
+}
+.tfv-host {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.45s;
+}
+.tfv-host.is-on {
+  opacity: 1;
+}
+.tfv-host video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* where the mosaic gathers (the droplet swells out of it) */
+.tfv-anchor {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tfv-glow {
+    animation: none;
+  }
+}

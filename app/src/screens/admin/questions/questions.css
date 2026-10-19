@@ -1,0 +1,209 @@
+/* Questions tab additions: the type switch, type pills in the list, inline «what's missing». */
+
+/* ---------- type switch (editor top) */
+.ad-qt-wrap {
+  container-type: inline-size;
+}
+.ad-qt {
+  --qt-pad: 5px;
+  --qt-gap: 5px;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--qt-gap);
+  padding: var(--qt-pad);
+  border-radius: 22px;
+  background: var(--ad-sunken);
+  border: 1px solid var(--line);
+}
+.ad-qt-thumb {
+  position: absolute;
+  top: var(--qt-pad);
+  bottom: var(--qt-pad);
+  left: var(--qt-pad);
+  width: calc((100% - 2 * var(--qt-pad) - 2 * var(--qt-gap)) / 3);
+  border-radius: 17px;
+  transform: translateX(calc(var(--qt-i, 0) * (100% + var(--qt-gap))));
+  background-image: var(--sheen), var(--chrome);
+  background-size:
+    300% 100%,
+    100% 100%;
+  background-position:
+    120% 0,
+    0 0;
+  background-repeat: no-repeat;
+  box-shadow: var(--chrome-shadow);
+  animation: vx-sweep 7.5s var(--ease-sweep) infinite;
+  transition: transform 0.55s var(--ease-back);
+  pointer-events: none;
+}
+.ad-qt-tab {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 17px;
+  background: transparent;
+  color: var(--fg-2);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.25s;
+}
+.ad-qt-tab:not(.is-on):hover {
+  background: var(--ad-hover);
+  color: var(--fg-strong);
+}
+.ad-qt-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ad-qt-tab.is-on {
+  color: var(--on-chrome);
+  cursor: default;
+}
+.ad-qt-ico {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--ad-hover);
+  color: var(--fg-strong);
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    transform 0.45s var(--ease-back);
+}
+.ad-qt-tab.is-on .ad-qt-ico {
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--on-chrome);
+  transform: scale(1.06);
+}
+.ad-qt-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.ad-qt-txt b {
+  font: 750 14px/1.15 var(--font-body);
+}
+.ad-qt-txt small {
+  font: 500 11.5px/1.3 var(--font-body);
+  color: var(--fg-muted);
+}
+.ad-qt-tab.is-on .ad-qt-txt small {
+  color: color-mix(in srgb, var(--on-chrome) 72%, transparent);
+}
+.ad-qt-line {
+  display: none;
+  margin: 8px 4px 0;
+  font: 500 12.5px/1.35 var(--font-body);
+  color: var(--fg-muted);
+  text-align: center;
+}
+/* Narrow editor (phone, three-column laptop): icon over label, the explanation under the track. */
+@container (max-width: 560px) {
+  .ad-qt-tab {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 6px;
+    min-height: 76px;
+    padding: 9px 6px;
+    text-align: center;
+  }
+  .ad-qt-txt b {
+    font-size: 12.5px;
+  }
+  .ad-qt-txt small {
+    display: none;
+  }
+  .ad-qt-line {
+    display: block;
+  }
+}
+
+/* The type card fades in after a switch. */
+.ad-qt-swap {
+  animation: ad-qt-in 0.4s var(--ease-back) both;
+}
+@keyframes ad-qt-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+/* ---------- «what's missing» right in a card */
+.ad-need {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--hot);
+  font: 650 12.5px/1.35 var(--font-body);
+}
+.ad-opts.is-need .ad-correct:not(.is-on) {
+  border-color: color-mix(in srgb, var(--hot) 55%, transparent);
+  color: var(--hot);
+}
+.ad-editor-problems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-color: color-mix(in srgb, var(--hot) 40%, transparent);
+  background: color-mix(in srgb, var(--hot) 8%, transparent);
+}
+.ad-editor-problems > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ad-editor-problems svg {
+  flex: none;
+  color: var(--hot);
+}
+
+/* ---------- type in the list and in «Добавить вопрос» */
+.ad-qi-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 19px;
+  padding: 0 7px 0 5px;
+  border-radius: 99px;
+  background: var(--ad-hover);
+  color: var(--fg-2);
+  font: 650 11px/1 var(--font-body);
+  white-space: nowrap;
+}
+.ad-qi-type svg {
+  opacity: 1;
+}
+.ad-qi.is-active .ad-qi-type {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--fg-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-qt-thumb,
+  .ad-qt-ico,
+  .ad-qt-swap {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* «Сюрприз-видео» (SurpriseCard.tsx): the tag in the list */
+.ad-qi-sur {
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 7px;
+  font-size: 9.5px;
+}

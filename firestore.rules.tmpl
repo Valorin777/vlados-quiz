@@ -1,0 +1,354 @@
+rules_version = '2';
+
+// Security rules for «Кто лучше знает Владоса» (docs/firebase.md → Auth & roles, Firestore layout).
+//
+// TEMPLATE: tools/gen-rules.mjs renders it into firestore.rules (prod) and firestore.dev.rules
+// (dev: additionally trusts the test admin bot-admin@vlados.test). Double-brace placeholders come from
+// shared/fbconfig.json → limits. Edit THIS file, then `npm run rules:gen`.
+//
+// Cost notes (rules get()/exists() are billed as reads): isAdmin() reads config/admins only for
+// verified email users outside the built-in list; an answer costs 2 extra reads (game + own player doc), a
+// reaction 1 (own player doc), a join 1 (game doc: phase, lateJoin, player cap).
+//
+// Abuse bounds (docs/firebase.md → Abuse & quota): every client-writable path is capped per uid —
+// one player doc per game (refused when the game is full / over / closed to late joiners), owner
+// edits of it at most one per {{playerWriteGapMs}} ms, one answer per round, one reaction per
+// {{reactionBucketMs}} ms bucket. A kicked uid can write nothing but reads.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Admins sign in with email + password. The address must be VERIFIED (the organizer clicks
+    // the link from sendEmailVerification), otherwise anyone could register an account under a
+    // listed address they do not own. config/admins is read only for verified email users outside
+    // the built-in list.
+    function isAdmin() {
+      let email = isSignedIn() ? request.auth.token.get('email', '') : '';
+      let verified = isSignedIn() && request.auth.token.get('email_verified', false) == true;
+      return email is string && email != '' && (
+        (verified && (email in ['valeratcharygin@gmail.com'] || email in adminEmails()))
+        /*@DEV_ADMIN@*/
+      );
+    }
+
+    function adminEmails() {
+      let admins = get(/databases/$(database)/documents/config/admins);
+      return admins == null ? [] : admins.data.get('emails', []);
+    }
+
+    function isStr(v, lo, hi) {
+      return v is string && v.size() >= lo && v.size() <= hi;
+    }
+
+    function isId(v) {
+      return v is string && v.matches('^[A-Za-z0-9_-]{1,{{idMax}}}$');
+    }
+
+    function isIntIn(v, lo, hi) {
+      return v is int && v >= lo && v <= hi;
+    }
+
+    function optMap(d, k) {
+      return !(k in d) || d[k] == null || d[k] is map;
+    }
+
+    function optList(d, k, max) {
+      return !(k in d) || (d[k] is list && d[k].size() <= max);
+    }
+
+    function optId(d, k) {
+      return !(k in d) || isId(d[k]);
+    }
+
+    function optStr(d, k, max) {
+      return !(k in d) || isStr(d[k], 0, max);
+    }
+
+    // ---------- config ----------
+
+    match /config/current {
+      allow get: if true;
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['gameId'])
+        && isId(request.resource.data.gameId);
+    }
+
+    match /config/admins {
+      allow get: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['emails'])
+        && request.resource.data.emails is list
+        && request.resource.data.emails.size() <= {{adminEmailsMax}};
+    }
+
+    // Admin clock probes: config/clock_{uid} = { t: serverTimestamp() }.
+    match /config/{docId} {
+      function isMyProbe() {
+        return isSignedIn() && docId == 'clock_' + request.auth.uid && isAdmin();
+      }
+      allow get, delete: if isMyProbe();
+      allow create, update: if isMyProbe()
+        && request.resource.data.keys().hasOnly(['t'])
+        && request.resource.data.t == request.time;
+    }
+
+    // ---------- admin-only content (questions WITH answers, settings) ----------
+
+    match /admin/{docId} {
+      function validContent(d) {
+        return d.keys().hasAll(['rev', 'settings', 'questions', 'trash'])
+          && d.keys().hasOnly(['rev', 'settings', 'questions', 'trash', 'updatedAt'])
+          && isIntIn(d.rev, 0, 1000000000)
+          && d.settings is map
+          && d.questions is list && d.questions.size() <= {{questionsMax}}
+          && d.trash is list && d.trash.size() <= {{questionsMax}}
+          && (!('updatedAt' in d) || d.updatedAt is number);
+      }
+      allow get, list: if isAdmin();
+      allow create, update: if isAdmin() && (docId != 'content' || validContent(request.resource.data));
+      allow delete: if isAdmin() && docId != 'content';
+    }
+
+    // ---------- media (get by id for everyone signed in; no listing; admins write) ----------
+
+    match /media/{mediaId} {
+      function validMeta(d) {
+        return d.keys().hasAll(['kind', 'mime', 'w', 'h', 'bytes', 'chunks', 'createdAt'])
+          && d.keys().hasOnly(['kind', 'mime', 'w', 'h', 'durationS', 'bytes', 'chunks', 'posterId', 'createdAt'])
+          && d.kind in ['image', 'video']
+          && d.mime is string && d.mime.matches('^(image|video)/[a-z0-9.+-]{1,60}$')
+          && isIntIn(d.w, 0, 20000)
+          && isIntIn(d.h, 0, 20000)
+          && (!('durationS' in d) || (d.durationS is number && d.durationS >= 0 && d.durationS <= 36000))
+          && isIntIn(d.bytes, 1, {{mediaMaxBytes}})
+          && isIntIn(d.chunks, 1, {{maxChunks}})
+          && optId(d, 'posterId')
+          && d.createdAt is timestamp;
+      }
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && isId(mediaId) && validMeta(request.resource.data);
+      allow delete: if isAdmin();
+
+      match /c/{chunkId} {
+        allow get: if isSignedIn();
+        allow list: if isAdmin();
+        allow create, update: if isAdmin()
+          && chunkId.matches('^(0|[1-9][0-9]{0,2})$') && int(chunkId) < {{maxChunks}}
+          && request.resource.data.keys().hasOnly(['d'])
+          && request.resource.data.d is bytes
+          && request.resource.data.d.size() >= 1
+          && request.resource.data.d.size() <= {{chunkMaxBytes}};
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ---------- games ----------
+
+    match /games/{gameId} {
+      function validRound(r) {
+        return r is map
+          && r.keys().hasAll(['i', 'total', 'qid', 'type', 'title', 'double', 'timeLimitS', 'introAt', 'openAt', 'endsAt'])
+          // hasOnly: a correct answer (correctId, answer, …) can never sneak into the public round.
+          && r.keys().hasOnly(['i', 'n', 'total', 'qid', 'type', 'title', 'media', 'double', 'timeLimitS', 'options', 'number',
+                               'items', 'firstLabel', 'lastLabel', 'introAt', 'openAt', 'endsAt'])
+          && isIntIn(r.i, 0, 10000)
+          && (!('n' in r) || isIntIn(r.n, 0, 10000))
+          && isIntIn(r.total, 0, 10000)
+          && isId(r.qid)
+          && r.type in ['choice', 'number', 'ordering']
+          && isStr(r.title, 0, {{textMax}})
+          && r.double is bool
+          && r.timeLimitS is number
+          && r.introAt is number && r.openAt is number && r.endsAt is number
+          && optMap(r, 'media')
+          && optMap(r, 'number')
+          && optList(r, 'options', {{optionsMax}})
+          && optList(r, 'items', {{optionsMax}})
+          && optStr(r, 'firstLabel', {{textMax}})
+          && optStr(r, 'lastLabel', {{textMax}});
+      }
+
+      function validGame(d) {
+        return d.keys().hasAll(['phase', 'phaseRev'])
+          && d.keys().hasOnly(['pub', 'phase', 'phaseRev', 'round', 'pause', 'answered', 'players', 'reveal', 'board',
+                               'final', 'vladosUid', 'host', 'banner', 'next', 'kicked'])
+          && d.phase in ['lobby', 'intro', 'open', 'locked', 'reveal', 'board', 'final']
+          && isIntIn(d.phaseRev, 0, 1000000000)
+          && optMap(d, 'pub')
+          && (!('round' in d) || d.round == null || validRound(d.round))
+          && optMap(d, 'pause')
+          && (!('answered' in d) || isIntIn(d.answered, 0, 100000))
+          && (!('players' in d) || isIntIn(d.players, 0, 100000))
+          && optMap(d, 'reveal')
+          && optMap(d, 'board')
+          && optMap(d, 'final')
+          && optMap(d, 'next')
+          && (!('vladosUid' in d) || d.vladosUid == null || isStr(d.vladosUid, 1, 128))
+          && (!('host' in d) || d.host == null
+              || (d.host is map && d.host.keys().hasOnly(['session', 'until']) && isStr(d.host.session, 1, 64) && d.host.until is number))
+          && (!('banner' in d) || d.banner == null || isStr(d.banner, 0, {{bannerMax}}))
+          && optList(d, 'kicked', 1000)
+          // NEVER publish a reveal (correct answer) while the question is still being answered.
+          && (!(d.phase in ['intro', 'open', 'locked']) || d.get('reveal', null) == null);
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && isId(gameId) && validGame(request.resource.data);
+      allow delete: if isAdmin();
+
+      function game() {
+        return get(/databases/$(database)/documents/games/$(gameId)).data;
+      }
+
+      function me() {
+        return get(/databases/$(database)/documents/games/$(gameId)/players/$(request.auth.uid)).data;
+      }
+
+      // Host bookkeeping: totals (rounds, answers, frozen results) and host (the lease).
+      match /private/{docId} {
+        allow read, write: if isAdmin();
+      }
+
+      // ----- players -----
+      match /players/{uid} {
+        // Joining: not after the final, after the lobby only with lateJoin, and while the
+        // host-maintained count (pushed at most every 15 s) is below pub.maxPlayers and the hard cap.
+        function joinOpen(g) {
+          let pub = g.get('pub', null) == null ? {} : g.pub;
+          let n = g.get('players', 0);
+          return g.phase != 'final'
+            && (g.phase == 'lobby' || pub.get('lateJoin', true) != false)
+            && n < {{playersHardMax}}
+            && n < pub.get('maxPlayers', {{playersHardMax}});
+        }
+
+        function validPlayer(d) {
+          return d.keys().hasAll(['name', 'seed', 'joinedAt', 'kicked', 'seenAt'])
+            && d.keys().hasOnly(['name', 'avatar', 'thumb', 'seed', 'joinedAt', 'kicked', 'seenAt'])
+            && isStr(d.name, 1, {{nameMax}})
+            && (!('avatar' in d) || (d.avatar is bytes && d.avatar.size() <= {{avatarMaxBytes}}))
+            && (!('thumb' in d) || (d.thumb is bytes && d.thumb.size() <= {{thumbMaxBytes}}))
+            && isIntIn(d.seed, 0, 4294967295)
+            && d.joinedAt is timestamp
+            && d.kicked is bool
+            && d.seenAt is timestamp;
+        }
+
+        allow get: if isOwner(uid) || isAdmin();
+        allow list: if isAdmin();
+        allow create: if isOwner(uid)
+          && joinOpen(game())
+          && validPlayer(request.resource.data)
+          && request.resource.data.joinedAt == request.time
+          && request.resource.data.seenAt == request.time
+          && request.resource.data.kicked == false;
+        // Owner edits (rename, selfie, clock probe) must stamp seenAt = request.time and come at
+        // least {{playerWriteGapMs}} ms after the previous one: a devtools loop cannot burn the
+        // 20k writes/day quota (or re-send a 40 KB selfie to every TV listener) in minutes.
+        allow update: if (isOwner(uid)
+            && resource.data.kicked == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'avatar', 'thumb', 'seenAt'])
+            && request.resource.data.seenAt == request.time
+            && request.time > resource.data.seenAt + duration.value({{playerWriteGapMs}}, 'ms')
+            && validPlayer(request.resource.data))
+          || (isAdmin() && validPlayer(request.resource.data));
+        allow delete: if isAdmin();
+      }
+
+      // ----- answers: games/{g}/answers/{round}_{uid} -----
+      match /answers/{answerId} {
+        // Finite (NaN/±Infinity fail every comparison) and inside the public [min, max]: one guest's
+        // 1e308 must not wreck everyone's histogram.
+        function validNumber(v, num) {
+          let n = num == null ? {} : num;
+          return v is number && v > -{{numberAbsMax}} && v < {{numberAbsMax}}
+            && (!('min' in n) || n.min == null || v >= n.min)
+            && (!('max' in n) || n.max == null || v <= n.max);
+        }
+
+        // Shape against the public round r (the host also drops payloads that do not fit the
+        // frozen question: unknown option ids, non-string ordering ids).
+        function validPayload(p, r) {
+          let type = r.type;
+          return p is map && p.get('t', '') == type && (
+            (type == 'choice' && p.keys().hasOnly(['t', 'id']) && isId(p.id))
+            || (type == 'number' && p.keys().hasOnly(['t', 'v']) && validNumber(p.v, r.get('number', null)))
+            || (type == 'ordering' && p.keys().hasOnly(['t', 'ids']) && p.ids is list
+                && p.ids.size() >= 2 && p.ids.size() <= {{optionsMax}}
+                && p.ids.size() == r.get('items', []).size()
+                && p.ids.toSet().size() == p.ids.size())
+          );
+        }
+
+        // Open / locked, or an intro whose opening time has come: the host switches intro → open at
+        // openAt, and a late host (a hidden admin tab) must not keep the guests from answering —
+        // phones open by the clock. Never while paused (a paused intro keeps its old openAt).
+        function windowOpen(g, round) {
+          let now = request.time.toMillis();
+          return (g.phase in ['open', 'locked'] || (g.phase == 'intro' && g.get('pause', null) == null))
+            && g.round != null
+            && g.round.i == round
+            && now >= g.round.openAt - {{answerEarlyMs}}
+            && now <= g.round.endsAt + {{answerLateMs}};
+        }
+
+        function isMine() {
+          let parts = answerId.split('_');
+          return isSignedIn() && parts.size() == 2 && parts[1] == request.auth.uid;
+        }
+
+        allow get: if isMine() || isAdmin();
+        allow list: if isAdmin();
+        allow create: if isSignedIn()
+          && request.resource.data.keys().hasOnly(['uid', 'round', 'p', 'at'])
+          && request.resource.data.keys().hasAll(['uid', 'round', 'p', 'at'])
+          && request.resource.data.uid == request.auth.uid
+          && isIntIn(request.resource.data.round, 0, 10000)
+          && answerId == string(request.resource.data.round) + '_' + request.auth.uid
+          && request.resource.data.at == request.time
+          && windowOpen(game(), request.resource.data.round)
+          && validPayload(request.resource.data.p, game().round)
+          && me().kicked == false;
+        // No update. Only admins delete (reset / new game / test cleanup).
+        allow delete: if isAdmin();
+      }
+
+      // ----- reactions: games/{g}/reactions/{uid}_{bucket}, bucket = floor(serverMs / {{reactionBucketMs}}) -----
+      match /reactions/{reactionId} {
+        function bucketOk() {
+          let parts = reactionId.split('_');
+          let bucket = int(parts[1]);
+          let current = math.floor(request.time.toMillis() / {{reactionBucketMs}});
+          return parts.size() == 2
+            && parts[0] == request.auth.uid
+            && reactionId == request.auth.uid + '_' + string(bucket)
+            && bucket >= current - 1
+            && bucket <= current + 1;
+        }
+
+        allow get, list: if isAdmin();
+        allow create: if isSignedIn()
+          && request.resource.data.keys().hasOnly(['uid', 'e', 'at'])
+          && request.resource.data.keys().hasAll(['uid', 'e', 'at'])
+          && request.resource.data.uid == request.auth.uid
+          && isIntIn(request.resource.data.e, 0, {{reactionMax}})
+          && request.resource.data.at == request.time
+          && bucketOk()
+          && me().kicked == false;
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}

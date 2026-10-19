@@ -1,0 +1,9 @@
+{
+  "firestore": {
+    "database": "(default)",
+    "location": "europe-north1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json",
+    "predeploy": "node tools/gen-rules.mjs --check --target prod"
+  }
+}
